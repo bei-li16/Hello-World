@@ -7,7 +7,6 @@ set current_path=%cd%
 set TARGET = %current_path%/Debug/main
 :: 输出当前路径
 echo Current path is: %current_path%
-
 :: 在这里可以添加其他需要使用current_path变量的命令
 
 if "%~1"=="make" (
@@ -22,6 +21,10 @@ if "%~1"=="make" (
 ) else if "%~1"=="rebuild" (
     echo Rebuild the projection.
     goto Rebuild_Proj
+) else if "%~1"=="-h" (
+    goto Usage
+) else if "%~1"=="-help" (
+    goto Usage
 ) else (
     echo Unknown parameter: %~1%
     goto Usage
@@ -31,17 +34,6 @@ if "%~1"=="make" (
 :Build_Proj
     @REM %TARGET%
     mingw32-make.exe -j12 -C ./ all
-    if errorlevel 1 (
-        echo.
-        echo === Build Failed ===
-        echo.
-        exit /b 1
-    ) else (
-        echo.
-        echo === Build Succeeded ===
-        echo.
-        exit /b 0
-    )
     goto EndBuild
 
 @REM Clean Project
@@ -50,8 +42,7 @@ if "%~1"=="make" (
     echo.
     echo === Clean End ===
     echo.
-    exit /b 0
-    goto EndBuild
+    goto EndFile
 
 @REM Clean and build the Project
 :Rebuild_Proj
@@ -60,6 +51,24 @@ if "%~1"=="make" (
     mingw32-make.exe clean
     echo === Build the project... ===
     mingw32-make.exe -j12 -C ./ all
+    goto EndBuild
+
+:Usage
+    echo.
+    echo    ===================== help message ======================
+    echo    Usage:      build.bat [param1]
+    echo    param1:     make parameter, make, build, clean, rebuild
+    echo    make        - make the project.
+    echo    build       - build the project.
+    echo    clean       - clean the project.
+    echo    rebuild     - clean and build the project.
+    echo    -h, -help   - print help message.
+    echo    =========================================================
+    echo.
+    exit /b 0
+    goto EndFile
+
+:EndBuild
     if errorlevel 1 (
         echo.
         echo === Build Failed ===
@@ -71,19 +80,8 @@ if "%~1"=="make" (
         echo.
         exit /b 0
     )
-    goto EndBuild
-
-:Usage
-    echo Usage: build.bat param1
-    echo.
-    echo param1:
-    echo    make        - make the project.
-    echo    build       - build the project.
-    echo    rebuild     - rebuild the project.
-    echo.
+    goto EndFile
+:EndFile
     exit /b 0
-    goto EndBuild
-
-:EndBuild
 endlocal
 pause
