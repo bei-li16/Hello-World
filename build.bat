@@ -21,6 +21,9 @@ if "%~1"=="make" (
 ) else if "%~1"=="rebuild" (
     echo Rebuild the projection.
     goto Rebuild_Proj
+) else if "%~1"=="buildall" (
+    echo Build all.
+    goto Build_All
 ) else if "%~1"=="-h" (
     goto Usage
 ) else if "%~1"=="-help" (
@@ -33,23 +36,32 @@ if "%~1"=="make" (
 @REM Make and build the Project
 :Build_Proj
     @REM %TARGET%
-    mingw32-make.exe -j12 -C ./ all
+    mingw32-make.exe -j12 -C ./ build
     goto EndBuild
 
 @REM Clean Project
 :Clean_Proj
     mingw32-make.exe clean
     echo.
-    echo === Clean End ===
+    echo ===================== Clean End =====================
     echo.
     goto EndFile
 
 @REM Clean and build the Project
 :Rebuild_Proj
     @REM %TARGET%
-    echo === Clean the project... ===
+    echo ===================== Clean the project... =====================
     mingw32-make.exe clean
-    echo === Build the project... ===
+    echo ===================== Build the project... =====================
+    mingw32-make.exe -j12 -C ./ build
+    goto EndBuild
+
+@REM Build all
+:Build_All
+    @REM %TARGET%
+    echo ===================== Clean the project... =====================
+    mingw32-make.exe clean
+    echo ===================== Build the project... =====================
     mingw32-make.exe -j12 -C ./ all
     goto EndBuild
 
@@ -62,6 +74,7 @@ if "%~1"=="make" (
     echo    build       - build the project.
     echo    clean       - clean the project.
     echo    rebuild     - clean and build the project.
+    echo    buildall    - build all.
     echo    -h, -help   - print help message.
     echo    =========================================================
     echo.
@@ -71,12 +84,12 @@ if "%~1"=="make" (
 :EndBuild
     if errorlevel 1 (
         echo.
-        echo === Build Failed ===
+        echo ====================== Build Failed =======================
         echo.
         exit /b 1
     ) else (
         echo.
-        echo === Build Succeeded ===
+        echo ===================== Build Succeeded =====================
         echo.
         exit /b 0
     )

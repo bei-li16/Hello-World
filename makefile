@@ -24,17 +24,34 @@ CFLAGS = -Wall 						\
          -g 						\
 		 $(addprefix -I, $(INCPATH))\
 
+# 预处理选项——添加编译依赖头文件夹-Iinc
+EFLAGS = -Wall 						\
+         -g 						\
+		 $(addprefix -I, $(INCPATH))\
+
+# 汇编选项——添加编译依赖头文件夹-Iinc
+AFLAGS = -Wall 						\
+		 -g 						\
+		 $(addprefix -I, $(INCPATH))\
+
 # 
 vpath %.c $(addsuffix :, $(SRCPATH))
+vpath %.h $(addsuffix :, $(INCPATH))
 
 # 自动查找所有源文件和头文件
 SRCS := $(wildcard $(addsuffix /*.c, $(SRCPATH)))
 
 SRC_FILES = $(foreach DIR,$(SRCPATH),$(notdir $(wildcard $(DIR)/*.c)))
 OUT_FILES = $(patsubst %.c, $(OUTDIR)/%.o, ${SRC_FILES})
+EXP_FILES = $(patsubst %.c, $(OUTDIR)/%.i, ${SRC_FILES})
+ASM_FILES = $(patsubst %.c, $(OUTDIR)/%.s, ${SRC_FILES})
+
+
 DEPS := $(wildcard $(addsuffix /*.h, $(INCPATH)))
 
 DEL_OUT_FILES = $(subst /,\,$(OUT_FILES))
+EXP_OUT_FILES = $(subst /,\,$(EXP_FILES))
+ASM_OUT_FILES = $(subst /,\,$(ASM_FILES))
 DEL_TARGET_FILES = $(subst /,\,$(TARGET))
 
 # 打印变量 SRCS 和 DEPS
@@ -52,18 +69,31 @@ $(TARGET): $(OUT_FILES)
 $(OUTDIR)/%.o: %.c $(DEPS) | $(OUTDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# 预处理每个.c文件为.i文件
+$(OUTDIR)/%.i: %.c $(DEPS) | $(OUTDIR)
+	$(CC) $(EFLAGS) -E $< -o $@
+
+# 预处理每个.c文件为.s文件
+$(OUTDIR)/%.s: %.c $(DEPS) | $(OUTDIR)
+	$(CC) -S $(AFLAGS) $< -o $@
+
 # 创建输出目录规则
 $(OUTDIR):
 	mkdir -p $(OUTDIR)
 
 
-.PHONY: clean all
+.PHONY: clean all build
 # 清理生成的文件
 clean:
 	del /Q $(DEL_OUT_FILES)
+	del /Q $(EXP_OUT_FILES)
+	del /Q $(ASM_OUT_FILES)
 	del /Q $(DEL_TARGET_FILES).exe
 	@echo Project cleaned.
 # 生成TARGET文件
-all: $(TARGET)
+all: $(TARGET) $(EXP_FILES) $(ASM_FILES)
+	@echo Build all...
+
+build: $(TARGET)
 	@echo Build the target...
 
